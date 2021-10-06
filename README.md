@@ -24,5 +24,5 @@ The available settings are as follows:
 - \*`UNITS`: The units for the output DXF file to use. For a full list of options, check the [relevant page](https://ezdxf.readthedocs.io/en/stable/concepts/units.html) of the ezdxf documentation. The most relevant options for parachute design are:
     - `1`: Inches (also `ezdxf.units.IN`)
     - `5`: Centimeters (also `ezdxf.units.CM`)
-- \*`FOLDER`: The output folder to place the DXF file in. If unspecified, the file will be created in the current folder. Folder delimiters must match the operating system (`\\` on Windows due to character escaping and `/` on Unix)
+- \*`FOLDER`: The output folder to place the DXF file in. If unspecified, the file will be created in the current folder. Folder delimiters must match the operating system (`\\` on Windows due to character escaping and `/` on Unix).
 - `OUTPUT`: The name of the created file. This setting is currently unused, but a filename option is in the works.

@@ -56,7 +56,7 @@ class SliderWithBox(QWidget):
         self.label().setText(title)
         self.slider().setRange(min, max)
         self.slider().setSingleStep(step)
-        self.box().setMinimum(min)
+        self.box().setRange(min, max)
         self.box().setValue(self.slider().value())
 
         self.layout().addWidget(self.label())
@@ -111,7 +111,7 @@ class SliderWithDoubleBox(QWidget):
         self.label().setText(title)
         self.slider().setRange(min, max)
         self.slider().setSingleStep(step)
-        self.box().setMinimum(min)
+        self.box().setRange(min, max)
         self.box().setValue(self.slider().value())
 
         self.layout().addWidget(self.label())
