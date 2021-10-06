@@ -175,7 +175,7 @@ class OptionsPane(QWidget):
 
         self.__chute_profile_dropdown = DropdownBox("Chute Profile", ["Elliptical", "Toroidal"])
         self.__diameter_slider = SliderWithDoubleBox("Diameter", 6, 96, 2)
-        self.__inner_diameter_slider = SliderWithDoubleBox("Inner Diameter", 0, 48)
+        self.__inner_diameter_slider = SliderWithDoubleBox("Inner Diameter", 0, 48, 1)
         self.__num_gores_slider = SliderWithBox("Number of Gores", 4, 12, 1)
         self.__allowance_box = AllowanceBox(0)
         self.__model_type_dropdown = DropdownBox("Model Type", ["Polygonal", "Circular"])
