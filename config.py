@@ -15,7 +15,7 @@ PROFILE = 0
 NUM_GORES = 6
 
 # Gore model type (0 = polygonal, 1 = circular). This describes whether a horizontal cross section of the finished chute should appear to be a polygon or a circle, for modeling purposes
-METHOD_TYPE = 1
+MODEL_TYPE = 1
 
 # Allowance for hemming in document units
 ALLOWANCE = 0.25
@@ -28,6 +28,3 @@ UNITS = 1
 
 # File output location
 FOLDER = ""
-
-# File name (including extension)
-OUTPUT = chute_profile[PROFILE] + str(round(DIAMETER, 3)) + "x" + str(NUM_GORES) + chute_type[METHOD_TYPE] + "_" + str(round(RATIO, 3)) + "_" + str(round(ALLOWANCE,3)) + "_" + str(round(INNER_DIAMETER)) + "_units" + str(UNITS) + ".dxf"
