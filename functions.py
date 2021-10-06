@@ -42,11 +42,11 @@ def toroidalPointList(d1: float, d2: float, r: float):
     num_pts = int(d1 * 10)
     torus_profile = array([])
     torus_profile.resize(num_pts+1, 2, refcheck=False)
-    d = (d1 + d2) / 2
-    a = (d1 - d2) / 2
+    r = (d1 + d2) / 4
+    a = (d1 - d2) / 4
     for i in range(num_pts + 1):
         t = pi * (i / num_pts)
-        torus_profile[i,:] = [d + a * cos(t), a * r * sin(t)]
+        torus_profile[i,:] = [r + a * cos(t), a * sin(t)]
     return torus_profile
 
 def goreProfile(point_list: ndarray, n: int, model_type: int):

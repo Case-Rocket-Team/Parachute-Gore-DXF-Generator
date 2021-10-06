@@ -186,6 +186,7 @@ class OptionsPane(QWidget):
         self.diameterSlider().setValue(float(DIAMETER))
         self.innerDiameterSlider().setValue(float(INNER_DIAMETER))
         self.numGoresSlider().setValue(int(NUM_GORES))
+        self.modelTypeDropdown().box().setCurrentIndex(MODEL_TYPE)
         self.allowanceBox().setValue(float(ALLOWANCE))
 
         layout = QVBoxLayout()
