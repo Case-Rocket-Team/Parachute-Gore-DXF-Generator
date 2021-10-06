@@ -1,5 +1,5 @@
 from PyQt5 import QtCore
-from numpy import number
+from numpy import concatenate, number
 from pyqtgraph.widgets.PlotWidget import PlotWidget
 from config import *
 from functions import *
@@ -175,7 +175,7 @@ class OptionsPane(QWidget):
 
         self.__chute_profile_dropdown = DropdownBox("Chute Profile", ["Elliptical", "Toroidal"])
         self.__diameter_slider = SliderWithDoubleBox("Diameter", 6, 96, 2)
-        self.__inner_diameter_slider = SliderWithDoubleBox("Inner Diameter", 0, self.diameterSlider().value()/2, 1)
+        self.__inner_diameter_slider = SliderWithDoubleBox("Inner Diameter", 0, 48)
         self.__num_gores_slider = SliderWithBox("Number of Gores", 4, 12, 1)
         self.__allowance_box = AllowanceBox(0)
         self.__model_type_dropdown = DropdownBox("Model Type", ["Polygonal", "Circular"])
@@ -235,6 +235,8 @@ class MainWindow(QWidget):
 
         self.__options_pane = OptionsPane()
         self.__plot = PlotWidget()
+
+        self.plot().getPlotItem().getViewBox().setAspectLocked()
 
         self.layout().addWidget(self.optionsPane())
         self.layout().addWidget(self.plot())
@@ -326,9 +328,17 @@ class MainWindow(QWidget):
             chute_profile = toroidalPointList(self.diameter(), self.innerDiameter(), RATIO)
         self.setPointList(goreProfile(chute_profile, self.numGores(), self.modelType()))
         self.setOffsetPointList(offset(self.pointList(), self.allowance()))
-        self.setPlot(PlotWidget())
-        self.plot().plot(self.pointList()[:,0], self.pointList()[:,1], pen=pyqtgraph.mkPen(color="#000000", width=1, style=QtCore.Qt.SolidLine))
-        self.plot().plot(self.offsetPointList()[:,0], self.offsetPointList()[:,1], pen=pyqtgraph.mkPen(color="#FF0000", width=1, style=QtCore.Qt.DashLine))
+        self.plot().clear()
+        pen1 = pyqtgraph.mkPen(color="#000000", width=1, style=QtCore.Qt.SolidLine)
+        ptlst = array(self.pointList())
+        ptlst.resize(len(ptlst)+1,2)
+        ptlst[-1,:] = ptlst[0,:]
+        self.plot().plot(ptlst[:,0], ptlst[:,1], pen=pen1)
+        pen2 = pyqtgraph.mkPen(color="#FF0000", width=1, style=QtCore.Qt.DashLine)
+        offptlst = array(self.offsetPointList())
+        offptlst.resize(len(offptlst)+1, 2)
+        offptlst[-1,:] = offptlst[0,:]
+        self.plot().plot(offptlst[:,0], offptlst[:,1], pen=pen2)
     
     def getDXFButtonClicked(self):
         output = chute_profile[self.profile()] + str(round(self.diameter(), 3)) + "x" + str(self.numGores()) + chute_type[self.modelType()] + "_" + str(round(RATIO, 3)) + "_" + str(round(self.allowance(),3)) + "_" + str(round(self.innerDiameter())) + "_units" + str(self.units()) + ".dxf"
