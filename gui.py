@@ -152,14 +152,14 @@ class SliderWithDoubleBox(QWidget):
 
 class AllowanceBox(QWidget):
 
-    def __init__(self, min: float):
+    def __init__(self, min: float, max: float):
         super().__init__()
         self.setLayout(QHBoxLayout())
         self.__label = QLabel()
         self.__box = QDoubleSpinBox()
 
         self.label().setText("Allowance")
-        self.box().setMinimum(min)
+        self.box().setRange(min, max)
         self.box().setSingleStep(0.05)
 
         self.layout().addWidget(self.label())
@@ -190,9 +190,9 @@ class OptionsPane(QWidget):
 
         self.__chute_profile_dropdown = DropdownBox("Chute Profile", ["Elliptical", "Toroidal"])
         self.__diameter_slider = SliderWithDoubleBox("Diameter", 6, 96, 2)
-        self.__inner_diameter_slider = SliderWithDoubleBox("Inner Diameter", 0, 48, 1)
-        self.__num_gores_slider = SliderWithBox("Number of Gores", 4, 12, 1)
-        self.__allowance_box = AllowanceBox(0)
+        self.__inner_diameter_slider = SliderWithDoubleBox("Inner Diameter", 0, DIAMETER-1, 1)
+        self.__num_gores_slider = SliderWithBox("Number of Gores", 4, 20, 1)
+        self.__allowance_box = AllowanceBox(0, 2)
         self.__model_type_dropdown = DropdownBox("Model Type", ["Polygonal", "Circular"])
         self.__update_button = UpdateButton()
         self.__get_dxf_button = GetDXFButton()
@@ -338,6 +338,8 @@ class MainWindow(QWidget):
     
     def diameterChanged(self):
         self.__diameter = self.optionsPane().diameterSlider().value()
+        self.optionsPane().innerDiameterSlider().slider().setMaximum(self.optionsPane().diameterSlider().value()-1)
+        self.optionsPane().innerDiameterSlider().box().setMaximum(self.optionsPane().diameterSlider().value()-1)
     
     def innerDiameterChanged(self):
         self.__inner_diameter = self.optionsPane().innerDiameterSlider().value()
