@@ -284,7 +284,6 @@ class MainWindow(QWidget):
         width = int(size * 4)
         height = int(size * 9 / 2)
         self.resize(width, height)
-        print(str(width) + " " + str(height))
     
     def layout(self):
         return self.__layout
