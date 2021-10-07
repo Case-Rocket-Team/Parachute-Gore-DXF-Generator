@@ -4,7 +4,7 @@ This program was designed to generate the shape of a gore that we might use to s
 
 To use the program, run `main.py`. Adjust the options in the GUI window, and once the settings are to your liking, press the `Plot gore` button to preview the gore, and press the `Get DXF` button to save a DXF file.
 
-Most settings can be changed in the GUI, and editing the config file will only affect the default values for these settings. The settings that can only be changed in the config file are starred below.
+Most settings can be changed in the GUI, and editing `config.py` will only affect the default values for these settings. The settings that can only be changed in the config file are starred below.
 
 The available settings are as follows:
 
@@ -25,4 +25,3 @@ The available settings are as follows:
     - `1`: Inches (also `ezdxf.units.IN`)
     - `5`: Centimeters (also `ezdxf.units.CM`)
 - \*`FOLDER`: The output folder to place the DXF file in. If unspecified, the file will be created in the current folder. Folder delimiters must match the operating system (`\\` on Windows due to character escaping and `/` on Unix).
-- `OUTPUT`: The name of the created file. This setting is currently unused, but a filename option is in the works.

@@ -1,4 +1,5 @@
 from PyQt5 import QtCore
+from PyQt5.QtGui import QPixmap
 from numpy import concatenate, number
 from pyqtgraph.widgets.PlotWidget import PlotWidget
 from config import *
@@ -149,12 +150,26 @@ class SliderWithDoubleBox(QWidget):
     def boxValueChanged(self):
         self.slider().setValue(self.box().value())
 
-class AllowanceBox(QDoubleSpinBox):
+class AllowanceBox(QWidget):
 
     def __init__(self, min: float):
         super().__init__()
-        self.setMinimum(min)
-        self.setSingleStep(0.05)
+        self.setLayout(QHBoxLayout())
+        self.__label = QLabel()
+        self.__box = QDoubleSpinBox()
+
+        self.label().setText("Allowance")
+        self.box().setMinimum(min)
+        self.box().setSingleStep(0.05)
+
+        self.layout().addWidget(self.label())
+        self.layout().addWidget(self.box())
+    
+    def label(self):
+        return self.__label
+    
+    def box(self):
+        return self.__box
 
 class UpdateButton(QPushButton):
 
@@ -187,7 +202,7 @@ class OptionsPane(QWidget):
         self.innerDiameterSlider().setValue(float(INNER_DIAMETER))
         self.numGoresSlider().setValue(int(NUM_GORES))
         self.modelTypeDropdown().box().setCurrentIndex(MODEL_TYPE)
-        self.allowanceBox().setValue(float(ALLOWANCE))
+        self.allowanceBox().box().setValue(float(ALLOWANCE))
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -229,19 +244,24 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         size = min(ctypes.windll.user32.GetSystemMetrics(0) / 16, ctypes.windll.user32.GetSystemMetrics(1) / 9)
-        width = int(size * 4)
-        height = int(size * 9 / 4)
-        self.resize(width, height)
-        self.setLayout(QHBoxLayout())
 
+        self.__layout = QHBoxLayout()
         self.__options_pane = OptionsPane()
         self.__plot = PlotWidget()
+        self.__logo = QLabel()
 
         self.plot().getPlotItem().getViewBox().setAspectLocked()
 
+        layout = QVBoxLayout()
         self.layout().addWidget(self.optionsPane())
-        self.layout().addWidget(self.plot())
-        
+        layout.addWidget(self.plot())
+        layout.addWidget(self.__logo)
+        self.layout().addLayout(layout)
+        self.setLayout(self.layout())
+
+        self.logo().setPixmap(QPixmap("logo.png").scaled(size, size))
+        self.logo().setAlignment(Qt.AlignHCenter)
+
         self.__profile = int(PROFILE)
         self.__diameter = float(DIAMETER)
         self.__inner_diameter = float(INNER_DIAMETER)
@@ -256,10 +276,18 @@ class MainWindow(QWidget):
         self.optionsPane().diameterSlider().box().valueChanged.connect(self.diameterChanged)
         self.optionsPane().innerDiameterSlider().box().valueChanged.connect(self.innerDiameterChanged)
         self.optionsPane().numGoresSlider().box().valueChanged.connect(self.numGoresChanged)
-        self.optionsPane().allowanceBox().valueChanged.connect(self.allowanceChanged)
+        self.optionsPane().allowanceBox().box().valueChanged.connect(self.allowanceChanged)
         self.optionsPane().modelTypeDropdown().box().currentIndexChanged.connect(self.modelTypeChanged)
         self.optionsPane().updateButton().clicked.connect(self.updateButtonClicked)
         self.optionsPane().getDXFButton().clicked.connect(self.getDXFButtonClicked)
+
+        width = int(size * 4)
+        height = int(size * 9 / 2)
+        self.resize(width, height)
+        print(str(width) + " " + str(height))
+    
+    def layout(self):
+        return self.__layout
     
     def optionsPane(self):
         return self.__options_pane
@@ -269,6 +297,9 @@ class MainWindow(QWidget):
     
     def setPlot(self, plot):
         self.__plot = plot
+    
+    def logo(self):
+        return self.__logo
     
     def profile(self):
         return self.__profile
@@ -316,7 +347,7 @@ class MainWindow(QWidget):
         self.__num_gores = self.optionsPane().numGoresSlider().value()
     
     def allowanceChanged(self):
-        self.__allowance = self.optionsPane().allowanceBox().value()
+        self.__allowance = self.optionsPane().allowanceBox().box().value()
     
     def modelTypeChanged(self):
         self.__model_type = self.optionsPane().modelTypeDropdown().box().currentIndex()
