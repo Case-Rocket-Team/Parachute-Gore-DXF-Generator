@@ -1,14 +1,18 @@
+# Parachute Gore DXF Generator
+# Copyright © 2022 Eabha Abramson
+# main.py - Runs the main application for the program
+
 from config import *
 from functions import *
 from gui import *
 
 def main():
-    app = QApplication(sys.argv)
+    app = QApplication(sys.argv)    # Create the application
 
-    window = MainWindow()
-    window.setWindowTitle("Parachute Gore DXF Generator")
+    window = MainWindow()   # Create the window for the application
+    window.setWindowTitle("Parachute Gore DXF Generator")   # Title
 
-    window.show()
-    app.exec_()
+    window.show()   # Show window
+    app.exec_() # Run app
 
-main()
+main()  # Run the program

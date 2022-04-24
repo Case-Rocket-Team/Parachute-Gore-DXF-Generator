@@ -1,9 +1,12 @@
+# Parachute Gore DXF Generator
+# Copyright © 2022 Eabha Abramson
+# functions.py - Contains utility functions ranging from a distance function to a DXF write function
+
 from math import pi, sin, cos, atan, sqrt, pow
 from typing import SupportsFloat
 import ezdxf
 import platform
 from numpy import array, ndarray
-
 
 def dist(x1: float, y1: float, x2: float, y2: float):
     """Calcuates the distance between two points with coordinates (x1, y1) and (x2, y2)."""
