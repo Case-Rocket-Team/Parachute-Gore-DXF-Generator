@@ -25,6 +25,7 @@ The available settings are as follows:
     - Inches (`1` or `ezdxf.units.IN`)
     - Centimeters (`5` or `ezdxf.units.CM`)
 - Output Folder (`FOLDER`): The output folder to place the DXF file in. If unspecified, the file will be created in the current (program) folder. Folder delimiters must match the operating system (`\` on Windows and `/` on Unix). In `config.py`, Windows delimiters must be written as `\\` because python uses `\` as an escape character.
+- File Name: The name of the output file. This can be whatever you like, but keep in mind that the program will overwrite existing files of the same name without asking first. If unspecified, the default filename will be used. The default filename is structured `DDII-GPM`, where `DD` is the diameter of the chute, `II` is the inner diameter of the chute, `G` is the number of gores, `P` is the chute profile ("E" for elliptical and "T" for toroidal), and `M` is the chute model ("C" for circular and "P" for polygonal).
 
 ##### Parachute Gore DXF Generator
 ##### Copyright © 2022 Eabha Abramson
