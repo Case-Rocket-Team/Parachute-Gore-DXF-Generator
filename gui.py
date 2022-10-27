@@ -4,7 +4,6 @@
 
 from PyQt5 import QtCore
 from PyQt5.QtGui import QPixmap
-from numpy import concatenate, number
 from pyqtgraph.widgets.PlotWidget import PlotWidget
 from config import *
 from functions import *
@@ -168,11 +167,11 @@ class SliderWithDoubleBox(QWidget):
         "Updates the slider when the box value is changed"
         self.slider().setValue(value)
 
-class AllowanceBox(QWidget):
+class DoubleBoxWithLabel(QWidget):
 
     "A class specifically designed to take in a hem allowance value, containing a QLabel and a QDoubleSpinBox."
 
-    def __init__(self, min: float, max: float):
+    def __init__(self, name: str, min: float, max: float, step: float):
         super().__init__()
 
         # Create label, box, and horizontal layout
@@ -181,9 +180,9 @@ class AllowanceBox(QWidget):
         self.__box = QDoubleSpinBox()
 
         # Populate initial values
-        self.label().setText("Allowance")
+        self.label().setText(name)
         self.box().setRange(min, max)
-        self.box().setSingleStep(0.05)
+        self.box().setSingleStep(step)
 
         # Set up horizontal layout
         self.layout().addWidget(self.label())
@@ -279,8 +278,10 @@ class OptionsPane(QWidget):
         self.__chute_profile_dropdown = DropdownBox("Chute Profile", ["Elliptical", "Toroidal"])
         self.__diameter_slider = SliderWithBox("Diameter", 6, 96, 2)
         self.__inner_diameter_slider = SliderWithBox("Inner Diameter", 0, DIAMETER-1, 1)
+        self.__height_ratio_box = DoubleBoxWithLabel("Height Ratio", 0, 1, 0.001)
+        self.__pulldown_ratio_box = DoubleBoxWithLabel("Pulldown Ratio", 0, 1, 0.01)
         self.__num_gores_slider = SliderWithBox("Number of Gores", 4, 20, 1)
-        self.__allowance_box = AllowanceBox(0, 2)
+        self.__allowance_box = DoubleBoxWithLabel("Allowance", 0, 2, 0.05)
         self.__model_type_dropdown = DropdownBox("Model Type", ["Polygonal", "Circular"])
         self.__units_dropdown = DropdownBox("Units", ["Inches", "Centimeters"])
         self.__folder_box = FolderBox()
@@ -288,10 +289,15 @@ class OptionsPane(QWidget):
         self.__update_button = UpdateButton()
         self.__get_dxf_button = GetDXFButton()
 
+        # Configure GUI items
+        self.heightRatioBox().box().setDecimals(3)
+
         # Populate initial values
         self.chuteProfileDropdown().box().setCurrentIndex(int(PROFILE))
-        self.diameterSlider().setValue(float(DIAMETER))
-        self.innerDiameterSlider().setValue(float(INNER_DIAMETER))
+        self.diameterSlider().setValue(int(DIAMETER))
+        self.innerDiameterSlider().setValue(int(INNER_DIAMETER))
+        self.heightRatioBox().box().setValue(RATIO)
+        self.pulldownRatioBox().box().setValue(PULLDOWN_RATIO)
         self.numGoresSlider().setValue(int(NUM_GORES))
         self.modelTypeDropdown().box().setCurrentIndex(MODEL_TYPE)
         self.unitsDropdown().box().setCurrentIndex(UNITS_INDEX)
@@ -303,6 +309,8 @@ class OptionsPane(QWidget):
         layout.addWidget(self.chuteProfileDropdown())
         layout.addWidget(self.diameterSlider())
         layout.addWidget(self.innerDiameterSlider())
+        layout.addWidget(self.heightRatioBox())
+        layout.addWidget(self.pulldownRatioBox())
         layout.addWidget(self.numGoresSlider())
         layout.addWidget(self.allowanceBox())
         layout.addWidget(self.modelTypeDropdown())
@@ -320,6 +328,12 @@ class OptionsPane(QWidget):
     
     def innerDiameterSlider(self):
         return self.__inner_diameter_slider
+    
+    def heightRatioBox(self):
+        return self.__height_ratio_box
+    
+    def pulldownRatioBox(self):
+        return self.__pulldown_ratio_box
     
     def numGoresSlider(self):
         return self.__num_gores_slider
@@ -353,7 +367,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         # Calculate a logo and window size based on display resolution
-        size = min(ctypes.windll.user32.GetSystemMetrics(0) / 16, ctypes.windll.user32.GetSystemMetrics(1) / 9)
+        size = int(min(ctypes.windll.user32.GetSystemMetrics(0) / 16, ctypes.windll.user32.GetSystemMetrics(1) / 9))
 
         # Create options pane, plot, logo, label, and layout
         self.__layout = QHBoxLayout()
@@ -362,8 +376,9 @@ class MainWindow(QWidget):
         self.__logo = QLabel()
         self.__copy = QLabel()
 
-        # Set the gore plot axes to always be 1:1 proportion
+        # Set the gore plot axes to always be 1:1 proportion and show the grid
         self.plot().getPlotItem().getViewBox().setAspectLocked()
+        self.plot().getPlotItem().showGrid(True, True, 0.6)
 
         # Add options pane to the layout. Create a vertical layout with the plot and logo and add it to the layout
         layout = QVBoxLayout()
@@ -386,6 +401,8 @@ class MainWindow(QWidget):
         self.__profile = int(PROFILE)
         self.__diameter = float(DIAMETER)
         self.__inner_diameter = float(INNER_DIAMETER)
+        self.__height_ratio = float(RATIO)
+        self.__pulldown_ratio = float(PULLDOWN_RATIO)
         self.__num_gores = int(NUM_GORES)
         self.__allowance = float(ALLOWANCE)
         self.__model_type = int(MODEL_TYPE)
@@ -399,6 +416,8 @@ class MainWindow(QWidget):
         self.optionsPane().chuteProfileDropdown().box().currentIndexChanged.connect(self.profileChanged)
         self.optionsPane().diameterSlider().box().valueChanged.connect(self.diameterChanged)
         self.optionsPane().innerDiameterSlider().box().valueChanged.connect(self.innerDiameterChanged)
+        self.optionsPane().heightRatioBox().box().valueChanged.connect(self.heightRatioChanged)
+        self.optionsPane().pulldownRatioBox().box().valueChanged.connect(self.pulldownRatioChanged)
         self.optionsPane().numGoresSlider().box().valueChanged.connect(self.numGoresChanged)
         self.optionsPane().allowanceBox().box().valueChanged.connect(self.allowanceChanged)
         self.optionsPane().modelTypeDropdown().box().currentIndexChanged.connect(self.modelTypeChanged)
@@ -443,6 +462,12 @@ class MainWindow(QWidget):
     
     def innerDiameter(self):
         return self.__inner_diameter
+    
+    def heightRatio(self):
+        return self.__height_ratio
+    
+    def pulldownRatio(self):
+        return self.__pulldown_ratio
     
     def numGores(self):
         return self.__num_gores
@@ -491,6 +516,14 @@ class MainWindow(QWidget):
         self.__inner_diameter = value
         self.updateDefaultFilename()
     
+    def heightRatioChanged(self, value):
+        "When the height ratio changes in the input box, update it in the main window as well"
+        self.__height_ratio = value
+
+    def pulldownRatioChanged(self, value):
+        "When the pulldown raio changes in the input box, update it in the main window as well"
+        self.__pulldown_ratio = value
+    
     def numGoresChanged(self, value):
         "When the number of gores changes in the input box, update it in the main window as well"
         self.__num_gores = value
@@ -535,9 +568,9 @@ class MainWindow(QWidget):
 
         # Generate a chute profile based on the current profile type
         if self.profile() == 0:
-            chute_profile = ellipticalPointList(self.diameter(), RATIO, self.innerDiameter())
+            chute_profile = ellipticalPointList(self.diameter(), self.heightRatio(), self.innerDiameter())
         else:
-            chute_profile = toroidalPointList(self.diameter(), self.innerDiameter(), RATIO)
+            chute_profile = toroidalPointList(self.diameter(), self.innerDiameter(), self.heightRatio(), self.pulldownRatio())
         
         # Update the current gore profile based on the chute profile. Calculate the new gore profile with hem allowance and update the offset gore profile
         self.setPointList(goreProfile(chute_profile, self.numGores(), self.modelType()))

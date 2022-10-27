@@ -2,7 +2,7 @@
 # Copyright © 2022 Eabha Abramson
 # functions.py - Contains utility functions ranging from a distance function to a DXF write function
 
-from math import pi, sin, cos, atan, sqrt, pow
+from math import asin, pi, sin, cos, atan, sqrt, pow
 from typing import SupportsFloat
 import ezdxf
 import platform
@@ -33,23 +33,27 @@ def ellipticalPointList(d: float, r: float, hole: float):
     ellipse_profile = array([])
     ellipse_profile.resize(num_pts+1, 2, refcheck=False)
     i = 0
-    while i < num_pts + 1 and (i == 0 or ellipse_profile[i-1][0] > hole/2):
+    while i < num_pts + 1 and (i == 0 or ellipse_profile[i-1,0] > hole/2):
         t = 0.5 * pi * (i / num_pts)
         ellipse_profile[i,:] = [d / 2 * cos(t), d / 2 * r * sin(t)]
         i += 1
     ellipse_profile.resize(i, 2)
     return ellipse_profile
 
-def toroidalPointList(d1: float, d2: float, r: float):
+def toroidalPointList(d1: float, d2: float, R: float, h: float):
     """Returns a list of points taken from the intersection of the first quadrant of the x-y plane and the surface of an toroidal parachute with the given parameters. For the purposes of this function, the y axis is located vertically along the center of the chute and the x axis lies horizontally and intersects the bottom edge of the chute."""
     num_pts = int(d1 * 10)
     torus_profile = array([])
     torus_profile.resize(num_pts+1, 2, refcheck=False)
-    r = (d1 + d2) / 4
-    a = (d1 - d2) / 4
-    for i in range(num_pts + 1):
+    phi = asin(1 - h)
+    a = (d1 - d2) / (2 * (1 + cos(phi)))
+    r = (d2 / 2) + (a * cos(phi))
+    i = 0
+    while i < num_pts + 1 and (i == 0 or torus_profile[i-1,0] > d2 / 2):
         t = pi * (i / num_pts)
-        torus_profile[i,:] = [r + a * cos(t), a * sin(t)]
+        torus_profile[i,:] = [r + a * cos(t), R * a * sin(t)]
+        i += 1
+    torus_profile.resize(i,2)
     return torus_profile
 
 def goreProfile(point_list: ndarray, n: int, model_type: int):

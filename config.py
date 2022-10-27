@@ -15,6 +15,9 @@ DIAMETER = 18
 # Chute minor diamater in document units. For elliptical chutes, this is the diameter of the hole in the top of the chute (set to 0 for no hole). For toroidal chutes, this is the minor diameter of the chute.
 INNER_DIAMETER = 0
 
+# Height distance from the top of the chute to the spill hole, normalized by the height of the chute (should be between 0 and 1, inclusive)
+PULLDOWN_RATIO = 0.2
+
 # Chute profile (0 = elliptical, 1 = toroidal)
 PROFILE = 0
 
