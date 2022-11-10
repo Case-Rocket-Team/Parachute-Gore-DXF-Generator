@@ -8,7 +8,7 @@ from pyqtgraph.widgets.PlotWidget import PlotWidget
 from config import *
 from functions import *
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QComboBox, QDoubleSpinBox, QFileDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSlider, QSpinBox, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QCheckBox, QComboBox, QDoubleSpinBox, QFileDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSlider, QSpinBox, QVBoxLayout, QWidget
 import sys
 import ctypes
 import pyqtgraph
@@ -75,7 +75,7 @@ class SliderWithBox(QWidget):
         self.layout().addLayout(layout)
 
         # Set box and slider to update each other
-        self.slider().sliderMoved.connect(self.sliderHandleMoved)
+        self.slider().valueChanged.connect(self.sliderHandleMoved)
         self.box().valueChanged.connect(self.boxValueChanged)
         
     
@@ -135,7 +135,7 @@ class SliderWithDoubleBox(QWidget):
         self.layout().addLayout(layout)
 
         # Set box and slider to update each other
-        self.slider().sliderMoved.connect(self.sliderHandleMoved)
+        self.slider().valueChanged.connect(self.sliderHandleMoved)
         self.box().valueChanged.connect(self.boxValueChanged)
         
     
@@ -267,6 +267,32 @@ class GetDXFButton(QPushButton):
         super().__init__()
         self.setText("Get DXF")
 
+class CheckboxWithLabel(QWidget):
+
+    "A class containing a QLabel and a QCheckBox"
+
+    def __init__(self, name: str, state: bool):
+        super().__init__()
+
+        # Create label, box, and horizontal layout
+        self.setLayout(QHBoxLayout())
+        self.__label = QLabel()
+        self.__box = QCheckBox()
+
+        # Populate inital values
+        self.label().setText(name)
+        self.box().setChecked(state)
+
+        # Set up horizontal layout
+        self.layout().addWidget(self.label())
+        self.layout().addWidget(self.box())
+    
+    def label(self):
+        return self.__label
+    
+    def box(self):
+        return self.__box
+
 class OptionsPane(QWidget):
 
     "The options pane for the program (i.e. everything except the graph and logo). This class creates the required options inputs and sets starting values"
@@ -275,17 +301,18 @@ class OptionsPane(QWidget):
         super().__init__()
 
         # Create the input classes (boxes, sliders, buttons, etc.)
-        self.__chute_profile_dropdown = DropdownBox("Chute Profile", ["Elliptical", "Toroidal"])
+        self.__chute_profile_dropdown = DropdownBox("Chute Profile", ["Ellipsoidal", "Toroidal"])
         self.__diameter_slider = SliderWithBox("Diameter", 6, 96, 2)
-        self.__inner_diameter_slider = SliderWithBox("Inner Diameter", 0, DIAMETER-1, 1)
+        self.__spill_hole_diameter_slider = SliderWithBox("Spill Hole Diameter", 0, DIAMETER-1, 1)
         self.__height_ratio_box = DoubleBoxWithLabel("Height Ratio", 0, 1, 0.001)
         self.__pulldown_ratio_box = DoubleBoxWithLabel("Pulldown Ratio", 0, 1, 0.01)
         self.__num_gores_slider = SliderWithBox("Number of Gores", 4, 20, 1)
         self.__allowance_box = DoubleBoxWithLabel("Allowance", 0, 2, 0.05)
-        self.__model_type_dropdown = DropdownBox("Model Type", ["Polygonal", "Circular"])
+        self.__model_dropdown = DropdownBox("Model Type", ["Polygonal", "Circular"])
         self.__units_dropdown = DropdownBox("Units", ["Inches", "Centimeters"])
         self.__folder_box = FolderBox()
         self.__filename_box = FilenameBox()
+        self.__autoupdate_checkbox = CheckboxWithLabel("Auto-update plot", False)
         self.__update_button = UpdateButton()
         self.__get_dxf_button = GetDXFButton()
 
@@ -295,11 +322,11 @@ class OptionsPane(QWidget):
         # Populate initial values
         self.chuteProfileDropdown().box().setCurrentIndex(int(PROFILE))
         self.diameterSlider().setValue(int(DIAMETER))
-        self.innerDiameterSlider().setValue(int(INNER_DIAMETER))
+        self.spillHoleDiameterSlider().setValue(int(SPILL_HOLE_DIAMETER))
         self.heightRatioBox().box().setValue(RATIO)
         self.pulldownRatioBox().box().setValue(PULLDOWN_RATIO)
         self.numGoresSlider().setValue(int(NUM_GORES))
-        self.modelTypeDropdown().box().setCurrentIndex(MODEL_TYPE)
+        self.modelDropdown().box().setCurrentIndex(MODEL)
         self.unitsDropdown().box().setCurrentIndex(UNITS_INDEX)
         self.allowanceBox().box().setValue(float(ALLOWANCE))
 
@@ -308,15 +335,16 @@ class OptionsPane(QWidget):
         self.setLayout(layout)
         layout.addWidget(self.chuteProfileDropdown())
         layout.addWidget(self.diameterSlider())
-        layout.addWidget(self.innerDiameterSlider())
+        layout.addWidget(self.spillHoleDiameterSlider())
         layout.addWidget(self.heightRatioBox())
         layout.addWidget(self.pulldownRatioBox())
         layout.addWidget(self.numGoresSlider())
         layout.addWidget(self.allowanceBox())
-        layout.addWidget(self.modelTypeDropdown())
+        layout.addWidget(self.modelDropdown())
         layout.addWidget(self.unitsDropdown())
         layout.addWidget(self.folderBox())
         layout.addWidget(self.filenameBox())
+        layout.addWidget(self.autoupdateCheckbox())
         layout.addWidget(self.updateButton())
         layout.addWidget(self.getDXFButton())
     
@@ -326,8 +354,8 @@ class OptionsPane(QWidget):
     def diameterSlider(self):
         return self.__diameter_slider
     
-    def innerDiameterSlider(self):
-        return self.__inner_diameter_slider
+    def spillHoleDiameterSlider(self):
+        return self.__spill_hole_diameter_slider
     
     def heightRatioBox(self):
         return self.__height_ratio_box
@@ -341,8 +369,8 @@ class OptionsPane(QWidget):
     def allowanceBox(self):
         return self.__allowance_box
     
-    def modelTypeDropdown(self):
-        return self.__model_type_dropdown
+    def modelDropdown(self):
+        return self.__model_dropdown
     
     def unitsDropdown(self):
         return self.__units_dropdown
@@ -352,6 +380,9 @@ class OptionsPane(QWidget):
     
     def filenameBox(self):
         return self.__filename_box
+    
+    def autoupdateCheckbox(self):
+        return self.__autoupdate_checkbox
     
     def updateButton(self):
         return self.__update_button
@@ -367,7 +398,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         # Calculate a logo and window size based on display resolution
-        size = int(min(ctypes.windll.user32.GetSystemMetrics(0) / 16, ctypes.windll.user32.GetSystemMetrics(1) / 9))
+        size = int(min(ctypes.windll.user32.GetSystemMetrics(0) / 8, ctypes.windll.user32.GetSystemMetrics(1) / 8))
 
         # Create options pane, plot, logo, label, and layout
         self.__layout = QHBoxLayout()
@@ -400,33 +431,38 @@ class MainWindow(QWidget):
         # Create chute parameters in the main window so the logic can access the values
         self.__profile = int(PROFILE)
         self.__diameter = float(DIAMETER)
-        self.__inner_diameter = float(INNER_DIAMETER)
+        self.__spill_hole_diameter = float(SPILL_HOLE_DIAMETER)
         self.__height_ratio = float(RATIO)
         self.__pulldown_ratio = float(PULLDOWN_RATIO)
         self.__num_gores = int(NUM_GORES)
         self.__allowance = float(ALLOWANCE)
-        self.__model_type = int(MODEL_TYPE)
+        self.__model = int(MODEL)
         self.__units = int(UNITS)
         self.__folder = str(FOLDER)
-        self.__filename = str("{:.0f}".format(self.diameter()) + "{:02.0f}".format(self.innerDiameter()) + "-" + str(self.numGores()) + chute_profile[self.profile()] + chute_type[self.modelType()])
+        self.__filename = str("{:.0f}".format(self.diameter()) + "{:02.0f}".format(self.spillHoleDiameter()) + "-" + str(self.numGores()) + chute_profile[self.profile()] + chute_model[self.model()])
+        self.__autoupdate = self.optionsPane().autoupdateCheckbox().box().isChecked()
         self.__point_list = array(None)
         self.__offset_point_list = array(None)
 
         # Link option input value updates so that they update the values in the main window as well
         self.optionsPane().chuteProfileDropdown().box().currentIndexChanged.connect(self.profileChanged)
         self.optionsPane().diameterSlider().box().valueChanged.connect(self.diameterChanged)
-        self.optionsPane().innerDiameterSlider().box().valueChanged.connect(self.innerDiameterChanged)
+        self.optionsPane().spillHoleDiameterSlider().box().valueChanged.connect(self.spillHoleDiameterChanged)
         self.optionsPane().heightRatioBox().box().valueChanged.connect(self.heightRatioChanged)
         self.optionsPane().pulldownRatioBox().box().valueChanged.connect(self.pulldownRatioChanged)
         self.optionsPane().numGoresSlider().box().valueChanged.connect(self.numGoresChanged)
         self.optionsPane().allowanceBox().box().valueChanged.connect(self.allowanceChanged)
-        self.optionsPane().modelTypeDropdown().box().currentIndexChanged.connect(self.modelTypeChanged)
+        self.optionsPane().modelDropdown().box().currentIndexChanged.connect(self.modelChanged)
         self.optionsPane().unitsDropdown().box().currentTextChanged.connect(self.unitsChanged)
         self.optionsPane().folderBox().box().textChanged.connect(self.folderChanged)
         self.optionsPane().folderBox().button().clicked.connect(self.folderButtonClicked)
         self.optionsPane().filenameBox().box().textChanged.connect(self.filenameChanged)
+        self.optionsPane().autoupdateCheckbox().box().stateChanged.connect(self.autoupdateChanged)
         self.optionsPane().updateButton().clicked.connect(self.updateButtonClicked)
         self.optionsPane().getDXFButton().clicked.connect(self.getDXFButtonClicked)
+
+        # Update enabled/disabled options
+        self.profileChanged(self.profile())
 
         # Set the filename box background text to the default filename
         self.optionsPane().filenameBox().box().setPlaceholderText(self.filename())
@@ -460,8 +496,8 @@ class MainWindow(QWidget):
     def diameter(self):
         return self.__diameter
     
-    def innerDiameter(self):
-        return self.__inner_diameter
+    def spillHoleDiameter(self):
+        return self.__spill_hole_diameter
     
     def heightRatio(self):
         return self.__height_ratio
@@ -475,8 +511,8 @@ class MainWindow(QWidget):
     def allowance(self):
         return self.__allowance
     
-    def modelType(self):
-        return self.__model_type
+    def model(self):
+        return self.__model
     
     def units(self):
         return self.__units
@@ -486,6 +522,9 @@ class MainWindow(QWidget):
     
     def filename(self):
         return self.__filename
+    
+    def autoupdate(self):
+        return self.__autoupdate
     
     def pointList(self):
         return self.__point_list
@@ -502,41 +541,61 @@ class MainWindow(QWidget):
     def profileChanged(self, value):
         "When the chute profile changes in the input box, update it in the main window as well"
         self.__profile = value
+        if chute_profile[value] == "E":
+            self.optionsPane().pulldownRatioBox().setEnabled(False)
+        elif chute_profile[value] == "T":
+            self.optionsPane().pulldownRatioBox().setEnabled(True)
         self.updateDefaultFilename()
+        if self.autoupdate():
+            self.updateButtonClicked()
     
     def diameterChanged(self, value):
-        "When the outer diameter changes in the input box, update it in the main window as well. Also, adjust the maximum inner diamter so it cannot be larger than the current diameter"
+        "When the diameter changes in the input box, update it in the main window as well. Also, adjust the maximum spill hole diameter so it cannot be larger than the current diameter"
         self.__diameter = value
-        self.optionsPane().innerDiameterSlider().slider().setMaximum(value-1)
-        self.optionsPane().innerDiameterSlider().box().setMaximum(value-1)
+        self.optionsPane().spillHoleDiameterSlider().slider().setMaximum(value-1)
+        self.optionsPane().spillHoleDiameterSlider().box().setMaximum(value-1)
         self.updateDefaultFilename()
+        if self.autoupdate():
+            self.updateButtonClicked()
     
-    def innerDiameterChanged(self, value):
-        "When the inner diameter changes in the input box, update it in the main window as well"
-        self.__inner_diameter = value
+    def spillHoleDiameterChanged(self, value):
+        "When the spill hole diameter changes in the input box, update it in the main window as well"
+        self.__spill_hole_diameter = value
         self.updateDefaultFilename()
+        if self.autoupdate():
+            self.updateButtonClicked()
     
     def heightRatioChanged(self, value):
         "When the height ratio changes in the input box, update it in the main window as well"
         self.__height_ratio = value
+        if self.autoupdate():
+            self.updateButtonClicked()
 
     def pulldownRatioChanged(self, value):
         "When the pulldown raio changes in the input box, update it in the main window as well"
         self.__pulldown_ratio = value
+        if self.autoupdate():
+            self.updateButtonClicked()
     
     def numGoresChanged(self, value):
         "When the number of gores changes in the input box, update it in the main window as well"
         self.__num_gores = value
         self.updateDefaultFilename()
+        if self.autoupdate():
+            self.updateButtonClicked()
     
     def allowanceChanged(self, value):
         "When the hem allowance changes in the input box, update it in the main window as well"
         self.__allowance = value
+        if self.autoupdate():
+            self.updateButtonClicked()
     
-    def modelTypeChanged(self, value):
+    def modelChanged(self, value):
         "When the chute model changes in the input box, update it in the main window as well"
-        self.__model_type = value
+        self.__model = value
         self.updateDefaultFilename()
+        if self.autoupdate():
+            self.updateButtonClicked()
 
     def unitsChanged(self, value):
         "When the units change in the input box, update them in the main window as well"
@@ -544,6 +603,8 @@ class MainWindow(QWidget):
             self.__units = 5
         else:
             self.__units = 1
+        if self.autoupdate():
+            self.updateButtonClicked()
     
     def folderChanged(self, value):
         "When the output folder changes in the input box, update it in the main window as well"
@@ -560,6 +621,11 @@ class MainWindow(QWidget):
         else:
             self.__filename = value
 
+    def autoupdateChanged(self, value):
+        self.__autoupdate = value
+        if value:
+            self.updateButtonClicked()
+
     def updateButtonClicked(self):
         "Calculates and plots the gore outline and the outline with hem allowance"
 
@@ -568,12 +634,12 @@ class MainWindow(QWidget):
 
         # Generate a chute profile based on the current profile type
         if self.profile() == 0:
-            chute_profile = ellipticalPointList(self.diameter(), self.heightRatio(), self.innerDiameter())
+            chute_profile = ellipsoidalPointList(self.diameter(), self.heightRatio(), self.spillHoleDiameter())
         else:
-            chute_profile = toroidalPointList(self.diameter(), self.innerDiameter(), self.heightRatio(), self.pulldownRatio())
+            chute_profile = toroidalPointList(self.diameter(), self.spillHoleDiameter(), self.heightRatio(), self.pulldownRatio())
         
         # Update the current gore profile based on the chute profile. Calculate the new gore profile with hem allowance and update the offset gore profile
-        self.setPointList(goreProfile(chute_profile, self.numGores(), self.modelType()))
+        self.setPointList(goreProfile(chute_profile, self.numGores(), self.model()))
         self.setOffsetPointList(offset(self.pointList(), self.allowance()))
 
         # Plot the gore profile
@@ -598,5 +664,5 @@ class MainWindow(QWidget):
     def updateDefaultFilename(self):
         "Sets the default filename based on the chute parameters and updates the filename box background text to match. If the filename box is empty, sets the filename to the default filename. Trigger this whenever an option changes that affects the default filename"
         if self.optionsPane().filenameBox().box().text() == "":
-            self.__filename = "{:.0f}".format(self.diameter()) + "{:02.0f}".format(self.innerDiameter()) + "-" + str(self.numGores()) + chute_profile[self.profile()] + chute_type[self.modelType()]
+            self.__filename = "{:.0f}".format(self.diameter()) + "{:02.0f}".format(self.spillHoleDiameter()) + "-" + str(self.numGores()) + chute_profile[self.profile()] + chute_model[self.model()]
         self.optionsPane().filenameBox().box().setPlaceholderText(self.filename())

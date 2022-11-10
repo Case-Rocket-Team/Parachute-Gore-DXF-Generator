@@ -6,7 +6,7 @@ from config import *
 from functions import *
 from gui import *
 
-def main():
+def main() -> None:
     app = QApplication(sys.argv)    # Create the application
 
     window = MainWindow()   # Create the window for the application

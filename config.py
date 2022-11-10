@@ -5,39 +5,39 @@
 from math import pow
 
 # For GUI internal use
-chute_profile = ["E", "T"]
-chute_type = ["P", "C"]
-chute_units = ["","in","","","","cm"]
+chute_profile: list[str] = ["E", "T"]
+chute_model: list[str] = ["P", "C"]
+chute_units: list[str] = ["","in","","","","cm"]
 
-# Chute major diameter in document units
-DIAMETER = 18
+# Chute diameter in document units
+DIAMETER: int = 20
 
-# Chute minor diamater in document units. For elliptical chutes, this is the diameter of the hole in the top of the chute (set to 0 for no hole). For toroidal chutes, this is the minor diameter of the chute.
-INNER_DIAMETER = 0
+# Spill hole diameter in document units
+SPILL_HOLE_DIAMETER: int = 4
 
 # Height distance from the top of the chute to the spill hole, normalized by the height of the chute (should be between 0 and 1, inclusive)
-PULLDOWN_RATIO = 0.2
+PULLDOWN_RATIO: float = 0.2
 
-# Chute profile (0 = elliptical, 1 = toroidal)
-PROFILE = 0
+# Chute profile (0 = ellipsoidal, 1 = toroidal)
+PROFILE: int = 0
 
 # Number of gores. Must be at least 4
-NUM_GORES = 6
+NUM_GORES: int = 6
 
-# Gore model type (0 = polygonal, 1 = circular). This describes whether a horizontal cross section of the finished chute should appear to be a polygon or a circle, for modeling purposes
-MODEL_TYPE = 1
+# Gore model (0 = polygonal, 1 = circular). This describes whether a horizontal cross section of the finished chute should appear to be a polygon or a circle, for modeling purposes
+MODEL: int = 1
 
 # Allowance for hemming in document units
-ALLOWANCE = 0.5
+ALLOWANCE: float = 0.5
 
-# Ratio of chute height to chute radius. 0 makes a flat chute profile, while 1 results in a circular chute profile. Any other values result in elliptical chutes.
-RATIO = pow(2,-0.5)
+# Ratio of chute height to chute radius. 0 makes a flat chute profile, while 1 results in a circular chute profile. Any other values result in ellipsoidal chutes.
+RATIO: float = 0.707
 
-# Units of the exported DXF file (1 = inches, 5 = cm. Check the ezdxf docs at https://ezdxf.readthedocs.io/en/stable/concepts/units.html for more unit options)
-UNITS = 1
+# Units of the exported DXF file (1 = inches, 5 = cm. Check the ezdxf docs at https://ezdxf.readthedocs.io/en/stable/concepts/units.html for more unit options). Unused in the GUI version
+UNITS: int = 1
 
-# Default index of units box, for use in GUI-only version
-UNITS_INDEX = 0
+# Default index of units box, for use in GUI version
+UNITS_INDEX: int = 0
 
 # File output location
-FOLDER = ""
+FOLDER: str = ""

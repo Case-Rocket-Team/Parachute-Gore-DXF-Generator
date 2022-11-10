@@ -8,27 +8,27 @@ import ezdxf
 import platform
 from numpy import array, ndarray
 
-def dist(x1: float, y1: float, x2: float, y2: float):
+def dist(x1: float, y1: float, x2: float, y2: float) -> float:
     """Calcuates the distance between two points with coordinates (x1, y1) and (x2, y2)."""
     return sqrt(pow(x2-x1,2) + pow(y2-y1,2))
 
-def loc(a: float, b: float, theta: float):
+def loc(a: float, b: float, theta: float) -> float:
     """Calculates the length of the third side of a triangle given the first two sides and the angle between them (measured in radians). Uses the law of cosines."""
     return sqrt(pow(a,2) + pow(b,2) - 2*a*b*cos(theta))
 
-def sign(x: SupportsFloat):
+def sign(x: SupportsFloat) -> int:
     """Returns 1 for positive numbers, 0 for 0, and -1 for negative numbers."""
     if x == 0:
-        return x
+        return 0
     else:
-        return x / abs(x)
+        return 1 if x > 0 else -1
 
-def sec(x: SupportsFloat):
+def sec(x: SupportsFloat) -> float:
     """Calculates the secant of x (measured in radians)."""
     return pow(cos(x), -1)
 
-def ellipticalPointList(d: float, r: float, hole: float):
-    """Returns a list of points taken from the intersection of the first quadrant of the x-y plane and the surface of an elliptical parachute with the given parameters. For the purposes of this function, the y axis is located vertically along the center of the chute and the x axis lies horizontally and intersects the bottom edge of the chute."""
+def ellipsoidalPointList(d: float, r: float, hole: float) -> ndarray[float, float]:
+    """Returns a list of points taken from the intersection of the first quadrant of the x-y plane and the surface of an ellipsoidal parachute with the given parameters. For the purposes of this function, the y axis is located vertically along the center of the chute and the x axis lies horizontally and intersects the bottom edge of the chute."""
     num_pts = int(d * 5)
     ellipse_profile = array([])
     ellipse_profile.resize(num_pts+1, 2, refcheck=False)
@@ -40,7 +40,7 @@ def ellipticalPointList(d: float, r: float, hole: float):
     ellipse_profile.resize(i, 2)
     return ellipse_profile
 
-def toroidalPointList(d1: float, d2: float, R: float, h: float):
+def toroidalPointList(d1: float, d2: float, R: float, h: float) -> ndarray[float, float]:
     """Returns a list of points taken from the intersection of the first quadrant of the x-y plane and the surface of an toroidal parachute with the given parameters. For the purposes of this function, the y axis is located vertically along the center of the chute and the x axis lies horizontally and intersects the bottom edge of the chute."""
     num_pts = int(d1 * 10)
     torus_profile = array([])
@@ -56,13 +56,13 @@ def toroidalPointList(d1: float, d2: float, R: float, h: float):
     torus_profile.resize(i,2)
     return torus_profile
 
-def goreProfile(point_list: ndarray, n: int, model_type: int):
+def goreProfile(point_list: ndarray[float, float], n: int, model: int) -> ndarray[float, float]:
     """Returns a set of points along the outer edge of a gore for a parachute with n gores, when given the profile of one edge of the gore."""
     num_pts = len(point_list)
     angle = 2 * pi / n
     gore_edge_profile = array([])
     gore_edge_profile.resize(len(point_list), 2, refcheck=False)
-    if model_type == 0:
+    if model == 0:
         gore_edge_profile[0,:] = [loc(point_list[0,0], point_list[0,0], angle) / 2, point_list[0,1]]
     else:
         gore_edge_profile[0,:] = [point_list[0,0] * angle / 2, point_list[0,1]]
@@ -72,7 +72,7 @@ def goreProfile(point_list: ndarray, n: int, model_type: int):
         x = point_list[i,0]
         y = point_list[i,1]
         x_next = 0
-        if model_type == 0:
+        if model == 0:
             x_next = loc(x, x, angle) / 2
         else:
             x_next = x * angle / 2
@@ -88,7 +88,7 @@ def goreProfile(point_list: ndarray, n: int, model_type: int):
         gore_profile[num_pts+i,:] = gore_edge_profile[-1-i,:]
     return gore_profile
 
-def offset(point_list: ndarray, offset: int):
+def offset(point_list: ndarray[float, float], offset: int) -> ndarray[float, float]:
     """Takes a list of points describing the outer edges of a parachute gore offsets each line outward by the given amount. Returns the new, offset list of points. Relies on the assumption that the x values of the points are always increasing."""
     offset_list = array([])
     offset_list.resize(len(point_list), 2, refcheck=False)
@@ -160,7 +160,7 @@ def offset(point_list: ndarray, offset: int):
         offset_list[i,:] = [x + mag * cos(dir), y + mag * sin(dir)]
     return offset_list
 
-def getDXF(point_list: ndarray, folder: str, output: str, units: int):
+def getDXF(point_list: ndarray, folder: str, output: str, units: int) -> None:
     """Takes a list of points and creates a DXF file of the lines connecting the points in the order of the list, icluding connecting the last point to the first. Saves the DXF file with the given output name in the given folder. The document units are set according to the value given."""
     doc = ezdxf.new()
     doc.units = units
