@@ -19,10 +19,8 @@ The available settings are as follows:
 - Model (`MODEL`): The method the program should use to model the shape of the gore. Each results in a different type of distortion in the shape of the final parachute, but the distortion can be reduced by increasing the number of gores. The options for method are:
     - Polygonal. This models the horizontal cross section of the parachute as a polygon. This means the gores will be correctly modeled as a flat surface that is bent to match the chute profile, leading to an accurate chute profile but an undersized circumference.
     - Circular. This models the horizontal cross section of the parachute as a circle. This leads to a parachute with a more accurate circumference, but can cause the profile to be distorted.
-- `RATIO`: ~~When someone gets owned on Twitter~~ The ratio of the minor axis of the chute to the major axis of the chute.
-    - For ellipsoidal chutes, this is a ratio of the chute height to the chute radius.
-    - For toroidal chutes, this the ratio of the height of the chute to the difference between the chute's outer and inner radii.
-- Units (`UNITS`): The units for the output DXF file to use. For a full list of options, check the [relevant page](https://ezdxf.readthedocs.io/en/stable/concepts/units.html) of the ezdxf documentation. The default GUI options are:
+- `RATIO`: ~~When someone gets owned on Twitter~~ The ratio between the major and minor axes of the revolved elliptical profile that models the chute.
+- Units (`UNITS`): The units for the output DXF file to use. For a full list of options, check the [relevant page](https://ezdxf.readthedocs.io/en/stable/concepts/units.html) of the ezdxf documentation. The GUI options are:
     - Inches (`1` or `ezdxf.units.IN`)
     - Centimeters (`5` or `ezdxf.units.CM`)
 - Output Folder (`FOLDER`): The output folder to place the DXF file in. If unspecified, the file will be created in the current (program) folder. Folder delimiters must match the operating system (`\` on Windows and `/` on Unix). In `config.py`, Windows delimiters must be written as `\\` because python uses `\` as an escape character.
